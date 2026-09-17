@@ -14,7 +14,7 @@ Một ứng dụng **C# WinForms** đóng vai trò giao diện phía PC để hi
 
 ## Sơ đồ nguyên lý
 
-![Sơ đồ nguyên lý](schematic.svg)
+![Sơ đồ nguyên lý](demo/Schematic.svg)
 
 Sơ đồ trên thể hiện hai tuyến giao tiếp UART tách biệt trên cùng một MCU:
 

@@ -23,7 +23,7 @@ Sơ đồ trên thể hiện hai tuyến giao tiếp UART tách biệt trên cù
 
 ## Sơ đồ mạch in (PCB) minh họa
 
-![Sơ đồ PCB minh họa](pcb.svg)
+![Sơ đồ PCB minh họa](demo/PCB.png)
 
 Bản phác thảo bố trí mạch trên chỉ nhằm trực quan hoá cách đấu nối giữa module ESP32-S3, đầu nối J1 (US-100) và đầu nối J2 (USB–UART converter); đây **không phải file Gerber để sản xuất thực tế**, mà là gợi ý bố trí nếu muốn chuyển từ đấu dây rời sang một board mạch cố định.
 

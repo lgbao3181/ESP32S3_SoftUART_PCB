@@ -12,8 +12,9 @@ ESP32-S3 dùng **UART phần cứng** để giao tiếp với cảm biến siêu
 
 Một ứng dụng **C# WinForms** đóng vai trò giao diện phía PC để hiển thị và trao đổi dữ liệu với ESP32-S3 theo thời gian thực.
 
-## Video 
-https://youtube.com/shorts/TBA_9MDTWb8
+## Video Demonstrations
+
+[![Watch the video](https://img.youtube.com/vi/TBA_9MDTWb8/hqdefault.jpg)](https://youtube.com/shorts/TBA_9MDTWb8)
 
 ## Sơ đồ nguyên lý
 

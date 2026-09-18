@@ -2,11 +2,13 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 [![ESP32-S3](https://img.shields.io/badge/MCU-ESP32--S3-blue)](https://www.espressif.com/en/products/socs/esp32-s3)
+[![SOFT_UART](....)
+[![PCB](....)
 [![.NET WinForms](https://img.shields.io/badge/PC%20App-.NET%20WinForms-darkblue)](https://learn.microsoft.com/en-us/dotnet/desktop/winforms/)
 
 ## Giới thiệu
 
-Đây là đồ án kỹ thuật nâng cao xây dựng một hệ thống đo khoảng cách nhúng dựa trên **ESP32-S3**. Trọng tâm của dự án không nằm ở cảm biến, mà ở việc **tự xây dựng một giao thức UART bằng phần mềm (Software UART / bit-banging)** để truyền dữ liệu từ ESP32-S3 lên PC, thay vì dùng UART phần cứng có sẵn.
+Đây là đồ án kỹ thuật nâng cao xây dựng một hệ thống đo khoảng cách nhúng dựa trên **ESP32-S3**. Trọng tâm của dự án không nằm ở cảm biến, mà ở việc **tự xây dựng một giao thức UART bằng phần mềm (Software UART / bit-banging)** để truyền dữ liệu từ ESP32-S3 lên PC, thay vì dùng UART phần cứng có sẵn.Ngoài ra còn tập trung vào việc thiết kế mạch nguyên lý vẽ PCB cho mạch để tối ưu hóa cho nhiệm vụ cụ thể
 
 ESP32-S3 dùng **UART phần cứng** để giao tiếp với cảm biến siêu âm US-100, đồng thời tự cài đặt một **UART mềm** trên hai chân GPIO thường để giao tiếp với PC thông qua bộ chuyển đổi USB–UART. Dữ liệu khoảng cách và các lệnh phản hồi được đóng gói theo một định dạng khung tự định nghĩa, có kiểm tra lỗi bằng **CRC16 (Modbus)**.
 

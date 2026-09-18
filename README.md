@@ -1,211 +1,470 @@
-# Dự án ESP32S3_Distance_SoftUART
+# ESP32-S3 Software UART & PCB Design
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-[![ESP32-S3](https://img.shields.io/badge/MCU-ESP32--S3-blue)](https://www.espressif.com/en/products/socs/esp32-s3)
-[![SOFT_UART](....)
-[![PCB](....)
-[![.NET WinForms](https://img.shields.io/badge/PC%20App-.NET%20WinForms-darkblue)](https://learn.microsoft.com/en-us/dotnet/desktop/winforms/)
+![ESP32-S3](https://img.shields.io/badge/MCU-ESP32--S3-blue)
+![Software UART](https://img.shields.io/badge/Communication-Software%20UART-green)
+![PCB](https://img.shields.io/badge/Hardware-PCB%20Design-orange)
 
 ## Giới thiệu
 
-Đây là đồ án kỹ thuật nâng cao xây dựng một hệ thống đo khoảng cách nhúng dựa trên **ESP32-S3**. Trọng tâm của dự án không nằm ở cảm biến, mà ở việc **tự xây dựng một giao thức UART bằng phần mềm (Software UART / bit-banging)** để truyền dữ liệu từ ESP32-S3 lên PC, thay vì dùng UART phần cứng có sẵn.Ngoài ra còn tập trung vào việc thiết kế mạch nguyên lý vẽ PCB cho mạch để tối ưu hóa cho nhiệm vụ cụ thể
+Đây là dự án thực hành **Embedded Systems**, tập trung vào việc **tự xây dựng Software UART (bit-banging) trên ESP32-S3**, kết hợp với quá trình **thiết kế sơ đồ nguyên lý (Schematic) và mạch in PCB** cho hệ thống.
 
-ESP32-S3 dùng **UART phần cứng** để giao tiếp với cảm biến siêu âm US-100, đồng thời tự cài đặt một **UART mềm** trên hai chân GPIO thường để giao tiếp với PC thông qua bộ chuyển đổi USB–UART. Dữ liệu khoảng cách và các lệnh phản hồi được đóng gói theo một định dạng khung tự định nghĩa, có kiểm tra lỗi bằng **CRC16 (Modbus)**.
+Thay vì sử dụng trực tiếp UART peripheral có sẵn của ESP32-S3, dự án tự điều khiển GPIO bằng phần mềm để thực hiện quá trình truyền và nhận dữ liệu UART ở mức bit.
 
-Một ứng dụng **C# WinForms** đóng vai trò giao diện phía PC để hiển thị và trao đổi dữ liệu với ESP32-S3 theo thời gian thực.
+Bên cạnh phần firmware, dự án thực hiện đầy đủ quy trình thiết kế phần cứng:
 
-## Video Demonstrations
+* Thiết kế **Schematic**.
+* Lựa chọn và kết nối các linh kiện.
+* Thiết kế **PCB layout**.
+* Thiết kế đường kết nối giữa ESP32-S3, cảm biến và USB-UART.
+* Kiểm tra kết nối và nguyên tắc bố trí mạch.
 
-[![Watch the video](https://img.youtube.com/vi/TBA_9MDTWb8/hqdefault.jpg)](https://youtube.com/shorts/TBA_9MDTWb8)
+Hệ thống đo khoảng cách bằng cảm biến **US-100** và ứng dụng **C# WinForms** được sử dụng như một **ứng dụng minh họa cho Software UART**, không phải trọng tâm chính của dự án.
 
-## Sơ đồ nguyên lý
+---
 
-![Sơ đồ nguyên lý](demo/Schematic.svg)
+## Mục tiêu dự án
 
-Sơ đồ trên thể hiện hai tuyến giao tiếp UART tách biệt trên cùng một MCU:
+### Firmware
 
-- **Tuyến UART mềm (màu xanh lá)**: GPIO43/GPIO44 ↔ USB–UART Converter ↔ PC. Đây là tuyến do nhóm tự lập trình bit-banging.
-- **Tuyến UART cứng (màu xanh dương)**: GPIO17/GPIO18 ↔ US-100. Dùng peripheral UART có sẵn của ESP32-S3.
+* Hiểu nguyên lý hoạt động của giao tiếp UART ở mức bit.
+* Tự xây dựng **Software UART TX/RX** bằng GPIO.
+* Điều khiển timing của từng bit bằng phần mềm.
+* Xử lý Start bit, Data bits và Stop bit.
+* Xây dựng giao thức truyền dữ liệu riêng.
+* Sử dụng CRC16 để phát hiện lỗi dữ liệu.
 
-## Sơ đồ mạch in (PCB) minh họa
+### Hardware
 
-![Sơ đồ PCB minh họa](demo/PCB.svg)
+* Thiết kế schematic cho hệ thống ESP32-S3.
+* Thiết kế PCB dựa trên schematic.
+* Bố trí linh kiện và routing các đường tín hiệu.
+* Thiết kế đầu nối cho cảm biến và USB-UART.
+* Kiểm tra tính nhất quán giữa Schematic và PCB.
 
-Bản phác thảo bố trí mạch trên chỉ nhằm trực quan hoá cách đấu nối giữa module ESP32-S3, đầu nối J1 (US-100) và đầu nối J2 (USB–UART converter); đây **không phải file Gerber để sản xuất thực tế**, mà là gợi ý bố trí nếu muốn chuyển từ đấu dây rời sang một board mạch cố định.
+---
 
-## Thành phần phần cứng
+## Kiến trúc hệ thống
 
-| Thành phần                | Số lượng | Vai trò                                                           |
-| -------------------------- | -------- | ------------------------------------------------------------------ |
-| ESP32-S3                   | 1        | MCU trung tâm, chạy firmware và UART mềm                          |
-| Cảm biến siêu âm US-100     | 1        | Đo khoảng cách, giao tiếp với ESP32-S3 qua UART phần cứng          |
-| Bộ chuyển đổi USB–UART      | 1        | Cầu nối giữa UART mềm của ESP32-S3 và cổng USB của PC              |
-| PC / Laptop                | 1        | Chạy ứng dụng WinForms để giám sát và giao tiếp                    |
-
-## Cấu hình chân
-
-### US-100 – ESP32-S3 (UART phần cứng)
-
-| Chân ESP32-S3 | Chức năng | Chân US-100 | Ghi chú                                  |
-| -------------- | --------- | ----------- | ------------------------------------------ |
-| **GPIO17**     | UART RX   | **TX**      | ESP32-S3 nhận dữ liệu khoảng cách từ US-100 |
-| **GPIO18**     | UART TX   | **RX**      | ESP32-S3 gửi lệnh đo tới US-100             |
-| **GND**        | Mass      | **GND**     | **Bắt buộc phải nối chung**                 |
-| **5V / VCC**   | Nguồn     | **VCC**     | Cấp theo đúng thông số của module US-100    |
-
-### UART mềm – PC
-
-| Chân ESP32-S3 | Chức năng          | USB–UART Converter | Mục đích                          |
-| -------------- | ------------------- | ------------------- | ----------------------------------- |
-| **GPIO43**     | Software UART TX    | **RX**              | ESP32-S3 gửi dữ liệu khoảng cách lên PC |
-| **GPIO44**     | Software UART RX    | **TX**              | ESP32-S3 nhận lệnh từ PC             |
-| **GND**        | Mass                 | **GND**             | **Bắt buộc phải nối chung**          |
-
-## Software UART tự xây dựng — phần trọng tâm của dự án
-
-Vì ESP32-S3 chỉ có một số ít cổng UART phần cứng và một cổng đã dành cho US-100, nhóm tự cài đặt một **UART mềm (bit-banging)** trên GPIO43/GPIO44 để có thêm một kênh truyền độc lập tới PC, đồng thời hiểu rõ nguyên lý hoạt động ở mức bit của giao tiếp UART thay vì chỉ dùng thư viện có sẵn.
-
-### 1. Nguyên lý bit-banging
-
-UART mềm không dùng bộ ngoại vi UART chuyên dụng của chip, mà điều khiển trực tiếp mức điện áp (HIGH/LOW) trên một chân GPIO thường theo đúng thời gian của từng bit, do phần mềm tự tạo:
-
-- **TX (phát)**: chân GPIO được cấu hình là output, lần lượt kéo mức điện áp lên/xuống theo từng bit của khung dữ liệu, mỗi bit giữ đúng trong một khoảng thời gian cố định gọi là *bit time*.
-- **RX (thu)**: chân GPIO được cấu hình là input, liên tục lấy mẫu mức điện áp tại giữa mỗi *bit time* để xác định bit đó là 0 hay 1, bắt đầu từ cạnh xuống của **start bit**.
-
-### 2. Thông số khung truyền
-
-- Tốc độ baud: **9600 bps**
-- Định dạng: **8N1** — 8 bit dữ liệu, không bit chẵn lẻ, 1 bit dừng
-- *Bit time* = 1 / 9600 ≈ 104 µs — đây là khoảng thời gian mà cả hai chiều TX/RX phải bám sát để không bị lệch mẫu (sai số timing là nguyên nhân lỗi phổ biến nhất của UART mềm).
-
-### 3. Quy trình phát (TX) do phần mềm điều khiển
-
-1. Kéo chân xuống mức LOW trong đúng một *bit time* để tạo **start bit**.
-2. Lần lượt xuất từng bit dữ liệu (thường theo thứ tự LSB trước), mỗi bit giữ đúng một *bit time*.
-3. Kéo chân lên mức HIGH trong một *bit time* để tạo **stop bit**, đưa đường truyền về trạng thái nghỉ (idle).
-4. Toàn bộ tiến trình phải chạy với độ trễ được canh chính xác (busy-wait hoặc timer), tránh bị các tác vụ khác của firmware làm gián đoạn giữa chừng.
-
-### 4. Quy trình thu (RX) do phần mềm điều khiển
-
-1. Liên tục theo dõi chân GPIO ở trạng thái idle (mức HIGH); khi phát hiện cạnh xuống, xác định đó là **start bit**.
-2. Chờ nửa *bit time* để lấy mẫu vào đúng giữa start bit (xác nhận không phải nhiễu), sau đó lấy mẫu tiếp mỗi *bit time* cho 8 bit dữ liệu.
-3. Ghép các bit đã lấy mẫu thành một byte hoàn chỉnh.
-4. Kiểm tra **stop bit**; nếu không đúng mức HIGH như kỳ vọng, byte được xem là lỗi khung (frame error).
-
-### 5. Định dạng gói tin và CRC16
-
-Sau khi lớp UART mềm truyền/nhận được các byte thô, firmware đóng gói dữ liệu khoảng cách theo khung tự định nghĩa:
-
+```text
+                    ┌─────────────────────┐
+                    │       PC / Laptop   │
+                    │     C# WinForms     │
+                    └──────────┬──────────┘
+                               │
+                         USB - UART
+                               │
+                    ┌──────────▼──────────┐
+                    │     ESP32-S3        │
+                    │                     │
+                    │  Software UART      │
+                    │  GPIO43 / GPIO44    │
+                    │                     │
+                    │       +             │
+                    │                     │
+                    │  Hardware UART      │
+                    │  GPIO17 / GPIO18    │
+                    └──────────┬──────────┘
+                               │
+                         Hardware UART
+                               │
+                    ┌──────────▼──────────┐
+                    │       US-100        │
+                    │  Ultrasonic Sensor  │
+                    └─────────────────────┘
 ```
+
+Trong hệ thống có hai kênh UART:
+
+| Giao tiếp         | GPIO ESP32-S3   | Phương thức       | Mục đích                                       |
+| ----------------- | --------------- | ----------------- | ---------------------------------------------- |
+| PC ↔ ESP32-S3     | GPIO43 / GPIO44 | **Software UART** | Kênh giao tiếp chính để kiểm thử Software UART |
+| US-100 ↔ ESP32-S3 | GPIO17 / GPIO18 | Hardware UART     | Đọc dữ liệu từ cảm biến                        |
+
+---
+
+# Software UART
+
+## 1. Nguyên lý
+
+Software UART không sử dụng UART peripheral của ESP32-S3.
+
+Thay vào đó, firmware trực tiếp điều khiển GPIO và tạo ra tín hiệu UART bằng phần mềm.
+
+### TX
+
+GPIO được cấu hình Output và thay đổi mức logic theo từng bit:
+
+```text
+Idle    Start       Data bits                 Stop
+ HIGH     LOW    D0 D1 D2 D3 D4 D5 D6 D7      HIGH
+  │        │      │  │  │  │  │  │  │  │       │
+  └────────┴──────┴──┴──┴──┴──┴──┴──┴──┴───────┘
+```
+
+Firmware phải đảm bảo mỗi bit được giữ trong đúng khoảng thời gian.
+
+### RX
+
+GPIO được cấu hình Input.
+
+Firmware phát hiện cạnh xuống của Start bit, sau đó lấy mẫu tín hiệu tại giữa mỗi khoảng bit để xác định giá trị dữ liệu.
+
+```text
+        Start       D0       D1       D2       ...      D7      Stop
+          ↓
+──────────┐
+          └───────┐
+                  └──────── ...
+             ↑
+          Sample
+```
+
+---
+
+## 2. UART Configuration
+
+Software UART sử dụng cấu hình:
+
+| Parameter | Value        |
+| --------- | ------------ |
+| Baud rate | **9600 bps** |
+| Data bits | **8**        |
+| Parity    | **None**     |
+| Stop bits | **1**        |
+| Format    | **8N1**      |
+| Bit time  | ≈ **104 µs** |
+
+Bit time được tính:
+
+```text
+Tbit = 1 / Baudrate
+
+Tbit = 1 / 9600
+     ≈ 104 µs
+```
+
+Timing là một trong những vấn đề quan trọng nhất của Software UART. Sai lệch timing có thể khiến bên nhận lấy mẫu sai vị trí của bit.
+
+---
+
+# Software UART TX
+
+Quy trình truyền một byte:
+
+1. Đường truyền ở trạng thái Idle HIGH.
+2. Kéo GPIO xuống LOW để tạo Start bit.
+3. Gửi lần lượt 8 Data bits theo thứ tự LSB trước.
+4. Đưa GPIO lên HIGH để tạo Stop bit.
+5. Trở về trạng thái Idle.
+
+Ví dụ truyền một byte:
+
+```text
+Idle   Start      Data bits                         Stop
+ HIGH    LOW    b0 b1 b2 b3 b4 b5 b6 b7             HIGH
+   ────────┐   ┌──┐   ┌──────┐   ┌──────┐
+           └───┘  └───┘      └───┘      └──────────
+```
+
+---
+
+# Software UART RX
+
+Quy trình nhận:
+
+1. Chờ GPIO ở trạng thái Idle HIGH.
+2. Phát hiện cạnh xuống.
+3. Chờ khoảng `0.5 × Tbit` để kiểm tra Start bit.
+4. Lấy mẫu 8 Data bits với khoảng cách `Tbit`.
+5. Ghép các bit thành một byte.
+6. Kiểm tra Stop bit.
+7. Nếu Stop bit không hợp lệ → Frame Error.
+
+---
+
+# Protocol & CRC16
+
+Sau khi Software UART truyền được các byte, firmware sử dụng một protocol đơn giản để đóng gói dữ liệu.
+
+```text
 @DATA:CRC&
 ```
 
-- `DATA`: giá trị khoảng cách đo được.
-- `CRC`: mã kiểm tra **CRC16 (Modbus)** tính trên phần `DATA`, giúp bên nhận phát hiện lỗi truyền do nhiễu hoặc lệch timing của UART mềm.
-- Bên nhận tính lại CRC16 trên dữ liệu nhận được và so sánh với CRC đi kèm; nếu không khớp, phản hồi `CRC_FAIL` để yêu cầu gửi lại thay vì chấp nhận dữ liệu sai.
-
-### 6. UART mềm so với UART phần cứng trong dự án
-
-| Tiêu chí            | UART phần cứng (US-100)          | UART mềm tự xây dựng (PC)                  |
-| --------------------- | ---------------------------------- | --------------------------------------------- |
-| Bộ điều khiển         | Peripheral UART tích hợp trong chip | Vòng lặp phần mềm điều khiển GPIO thường     |
-| Độ chính xác timing   | Do phần cứng đảm bảo               | Phụ thuộc vào việc canh delay/timer chính xác |
-| Chi phí CPU           | Thấp                                | Cao hơn do phải bận (busy-wait) trong lúc truyền/nhận |
-| Mục đích trong đồ án  | Đọc cảm biến ổn định               | Minh hoạ và thực hành nguyên lý UART ở mức bit |
-
-## Kiến trúc hệ thống tổng quan
+Trong đó:
 
 ```text
-┌─────────────────────┐
-│   Ứng dụng WinForms  │
-│   (giám sát trên PC) │
-└──────────┬──────────┘
-           │ Software UART (bit-banging)
-           │ khung: @DATA:CRC&
-           ▼
-┌─────────────────────┐
-│      ESP32-S3       │
-│ ┌─────────────────┐ │
-│ │ Software UART   │ │
-│ │  + CRC16        │ │
-│ └────────┬────────┘ │
-│          │          │
-│ ┌────────▼────────┐ │
-│ │ UART phần cứng  │ │
-│ └────────┬────────┘ │
-└──────────┼──────────┘
-           │ UART
-           ▼
-┌─────────────────────┐
-│       US-100        │
-│  Cảm biến siêu âm    │
-└─────────────────────┘
+@       → Start of frame
+DATA    → Payload
+:       → Separator
+CRC     → CRC16
+&       → End of frame
 ```
 
-### Quy trình hoạt động
+CRC sử dụng thuật toán **CRC16 Modbus**.
 
-1. **Khởi tạo**: cấu hình UART phần cứng cho US-100 và cấu hình UART mềm (GPIO43/44) cho PC.
-2. **Đo khoảng cách**: gửi lệnh `0x55` tới US-100, đọc và xác thực 2 byte khoảng cách trả về.
-3. **Đóng gói và truyền**: tính CRC16 (Modbus), gửi lên PC qua UART mềm theo khung `@DATA:CRC&`.
-4. **Giao tiếp với PC**: nhận và phân tích lệnh từ WinForms, xác thực CRC nhận được, trả về dữ liệu hoặc `CRC_FAIL`.
-5. **Vận hành liên tục**: đo định kỳ đồng thời xử lý giao tiếp UART mềm với PC song song.
+Quá trình xử lý:
 
-## Bắt đầu
-
-### Yêu cầu phần mềm
-
-| Phần mềm                   | Phiên bản | Mục đích                                       |
-| ---------------------------- | ---------- | ------------------------------------------------- |
-| Arduino IDE / PlatformIO      | Mới nhất   | Phát triển và nạp firmware cho ESP32-S3          |
-| ESP32 Arduino Core             | Mới nhất   | Hỗ trợ phần cứng và ngoại vi ESP32-S3             |
-| C# / .NET WinForms             | .NET 6+    | Ứng dụng giám sát và giao tiếp phía PC             |
-| Serial Terminal                | Bất kỳ     | Kiểm thử và gỡ lỗi giao tiếp nối tiếp              |
-
-### Lắp phần cứng
-
-* Nối US-100 vào GPIO17 (RX) và GPIO18 (TX) — dùng UART phần cứng.
-* Nối bộ chuyển đổi USB–UART vào GPIO43 (TX) và GPIO44 (RX) — dùng UART mềm.
-* Đảm bảo ESP32-S3, US-100 và bộ chuyển đổi USB–UART dùng chung **GND**.
-* Đảm bảo mức điện áp logic của bộ chuyển đổi USB–UART tương thích với ESP32-S3.
-
-### Cài đặt
-
-1. Sao chép kho mã nguồn:
-
-```bash
-git clone <repository-url>
-cd ESP32S3_Distance_SoftUART
+```text
+DATA
+ │
+ ▼
+CRC16 Calculation
+ │
+ ▼
+@DATA:CRC&
+ │
+ ▼
+Software UART TX
+ │
+ ▼
+Software UART RX
+ │
+ ▼
+CRC Verification
+ │
+ ├── Valid   → Accept data
+ │
+ └── Invalid → CRC_FAIL
 ```
 
-2. Mở dự án trong **Arduino IDE hoặc PlatformIO**.
-3. Chọn đúng board **ESP32-S3** và cổng serial tương ứng.
-4. Kết nối US-100 và bộ chuyển đổi USB–UART theo đúng bảng cấu hình chân.
-5. Biên dịch và nạp firmware cho ESP32-S3.
-6. Mở ứng dụng WinForms và chọn cổng serial tương ứng.
-7. Khởi động hệ thống — ESP32-S3 sẽ đo khoảng cách định kỳ từ US-100 và gửi kết quả lên PC theo khung `@DATA:CRC&` qua UART mềm.
+CRC được sử dụng để phát hiện dữ liệu bị lỗi trong quá trình truyền.
 
-### Kiểm thử giao tiếp
+---
 
-Có thể dùng serial terminal hoặc ứng dụng WinForms để gửi một khung hợp lệ tới ESP32-S3 và kiểm tra xem CRC có được xác thực đúng và phản hồi trả về có như mong đợi hay không.
+# Hardware Design
 
-## Tài liệu tham khảo
+Một phần quan trọng của dự án là chuyển hệ thống từ kết nối bằng dây rời sang thiết kế mạch điện tử hoàn chỉnh.
 
-* [Datasheet ESP32-S3](https://www.espressif.com/sites/default/files/documentation/esp32-s3_datasheet_en.pdf)
-* [Tài liệu tham chiếu kỹ thuật ESP32-S3](https://www.espressif.com/sites/default/files/documentation/esp32-s3_technical_reference_manual_en.pdf)
-* [Tài liệu Arduino-ESP32](https://docs.espressif.com/projects/arduino-esp32/en/latest/)
-* [Datasheet cảm biến siêu âm US-100](https://www.mouser.com/datasheet/2/813/US-100-DS-1218130.pdf)
-* [Tài liệu Microsoft .NET](https://learn.microsoft.com/en-us/dotnet/)
-* [Tài liệu Windows Forms](https://learn.microsoft.com/en-us/dotnet/desktop/winforms/)
+Quy trình thiết kế:
+
+```text
+Requirements
+     │
+     ▼
+Component Selection
+     │
+     ▼
+Schematic Design
+     │
+     ▼
+ERC Check
+     │
+     ▼
+PCB Layout
+     │
+     ▼
+Routing
+     │
+     ▼
+DRC Check
+     │
+     ▼
+PCB
+```
+
+## Schematic
+
+Schematic mô tả toàn bộ kết nối điện giữa:
+
+* ESP32-S3.
+* US-100.
+* USB-UART interface.
+* Các đầu nối.
+* Nguồn và GND.
+* Các đường Software UART TX/RX.
+
+![Schematic](demo/Schematic.svg)
+
+---
+
+## PCB Design
+
+PCB được thiết kế dựa trên schematic nhằm tạo thành một board mạch có cấu trúc rõ ràng thay vì sử dụng kết nối dây rời.
+
+![PCB](demo/PCB.svg)
+
+Các công việc thực hiện:
+
+* Assign footprint.
+* Component placement.
+* Routing.
+* Ground plane.
+* Kiểm tra clearance.
+* Kiểm tra DRC.
+* Kiểm tra kết nối giữa schematic và PCB.
+
+> PCB trong repository được sử dụng để thể hiện quá trình thiết kế phần cứng của dự án.
+
+---
+
+# Pin Configuration
+
+## Software UART
+
+| ESP32-S3 | Function         | Connected to |
+| -------- | ---------------- | ------------ |
+| GPIO43   | Software UART TX | USB-UART RX  |
+| GPIO44   | Software UART RX | USB-UART TX  |
+| GND      | Ground           | USB-UART GND |
+
+## Hardware UART – US-100
+
+| ESP32-S3 | Function | US-100 |
+| -------- | -------- | ------ |
+| GPIO17   | UART RX  | TX     |
+| GPIO18   | UART TX  | RX     |
+| GND      | Ground   | GND    |
+| 5V / VCC | Power    | VCC    |
+
+---
+
+# Hardware Components
+
+| Component          | Quantity | Function                      |
+| ------------------ | -------: | ----------------------------- |
+| ESP32-S3           |        1 | Main MCU                      |
+| US-100             |        1 | Distance sensor / UART device |
+| USB-UART Converter |        1 | PC communication interface    |
+| PCB                |        1 | Custom hardware platform      |
+| PC / Laptop        |        1 | Test and monitor system       |
+
+---
+
+# Application Demo
+
+US-100 được sử dụng để tạo dữ liệu thực tế cho quá trình kiểm thử Software UART.
+
+Luồng hoạt động:
+
+```text
+US-100
+  │
+  │ Hardware UART
+  ▼
+ESP32-S3
+  │
+  │ Generate packet
+  │ @DATA:CRC&
+  ▼
+Software UART
+  │
+  ▼
+USB-UART
+  │
+  ▼
+PC
+  │
+  ▼
+C# WinForms
+```
+
+Ứng dụng WinForms có nhiệm vụ hiển thị và trao đổi dữ liệu với ESP32-S3.
+
+Phần này chủ yếu phục vụ **demo và kiểm thử Software UART**.
+
+---
+
+# Project Structure
+
+```text
+ESP32S3_Distance_SoftUART/
+│
+├── demo/
+│   ├── 3D.png
+│   ├── demo.mp4
+│   ├── PCB.svg
+│   └── Schematic.svg
+│
+├── firmware/
+│   ├── include/
+│   ├── src/
+│   └── ...
+│
+├── pc/
+│   └── WinForms/
+│
+└── README.md
+```
+
+---
+
+# Development Environment
+
+| Tool                     | Purpose                |
+| ------------------------ | ---------------------- |
+| PlatformIO / Arduino IDE | ESP32-S3 firmware      |
+| ESP32 Arduino Core       | MCU framework          |
+| KiCad                    | Schematic & PCB design |
+| C# / .NET WinForms       | PC application         |
+| Serial Terminal          | UART testing           |
+
+---
+
+# What I Learned
+
+Thông qua dự án, các nội dung chính được thực hành gồm:
+
+### Embedded Firmware
+
+* GPIO manipulation.
+* UART protocol.
+* Software UART / Bit-banging.
+* UART timing.
+* Serial communication.
+* CRC16.
+* Data framing.
+* Error detection.
+
+### Hardware Design
+
+* Schematic design.
+* Component selection.
+* Footprint assignment.
+* PCB layout.
+* Signal routing.
+* Ground plane.
+* ERC / DRC.
+* Hardware–firmware integration.
+
+### System Integration
+
+* ESP32-S3 ↔ sensor.
+* ESP32-S3 ↔ USB-UART.
+* MCU ↔ PC communication.
+* Firmware ↔ hardware.
+* Testing and debugging.
+
+---
+
+# Demo
+
+[![Watch the video](https://img.youtube.com/vi/TBA_9MDTWb8/hqdefault.jpg)](https://youtube.com/shorts/TBA_9MDTWb8)
+
+---
+
+# References
+
+* [ESP32-S3 Datasheet](https://www.espressif.com/sites/default/files/documentation/esp32-s3_datasheet_en.pdf)
+* [ESP32-S3 Technical Reference Manual](https://www.espressif.com/sites/default/files/documentation/esp32-s3_technical_reference_manual_en.pdf)
+* [Arduino-ESP32 Documentation](https://docs.espressif.com/projects/arduino-esp32/en/latest/)
+* [US-100 Datasheet](https://www.mouser.com/datasheet/2/813/US-100-DS-1218130.pdf)
+* [Microsoft .NET Documentation](https://learn.microsoft.com/en-us/dotnet/)
+* [Windows Forms Documentation](https://learn.microsoft.com/en-us/dotnet/desktop/winforms/)
 * [Modbus CRC16](https://www.modbustools.com/modbus_crc16.htm)
 
-## Trạng thái dự án
+---
 
-* **Trạng thái**: Hoàn thành
-* **Phiên bản**: v1.0
-* **Cập nhật lần cuối**: Tháng 9/2026
+# Project Status
 
-## Liên hệ
+**Status:** Completed
+**Version:** v1.0
+**Last updated:** September 2026
+
+---
+
+## Author
 
 **Gia Bảo**
-📧 Email: *[your-email@example.com](mailto:your-email@example.com)*
-🐙 GitHub: *your-github-profile*
+
+Embedded Systems / Computer Engineering

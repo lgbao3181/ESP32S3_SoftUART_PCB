@@ -64,7 +64,7 @@ Thiết kế bao gồm:
 
 ---
 ## Nguyên mẫu hoàn thiện
----![Nguyên mẫu sau khi hoàn thiện](demo/Prototype.jpg)
+---![Nguyên mẫu sau khi hoàn thiện](demo/Prototype.jpeg)
 ## Thành phần phần cứng
 
 | Thành phần              | Số lượng | Vai trò                                                   |

@@ -43,9 +43,9 @@ Sơ đồ trên thể hiện hai tuyến giao tiếp UART độc lập trên ESP
 
 ---
 
-## Sơ đồ mạch in (PCB) minh họa
+## Sơ đồ mạch in (PCB)
 
-![Sơ đồ PCB minh họa](demo/PCB.svg)
+![Sơ đồ PCB ](demo/PCB.svg)
 
 PCB được thiết kế dựa trên sơ đồ nguyên lý nhằm thể hiện quá trình chuyển từ thiết kế mạch điện sang bố trí mạch in.
 
@@ -62,6 +62,9 @@ Thiết kế bao gồm:
 
 ---
 
+---
+## Nguyên mẫu hoàn thiện
+---![Nguyên mẫu sau khi hoàn thiện](demo/Prototype.jpg)
 ## Thành phần phần cứng
 
 | Thành phần              | Số lượng | Vai trò                                                   |

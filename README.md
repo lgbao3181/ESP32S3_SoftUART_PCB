@@ -24,7 +24,11 @@ Dữ liệu khoảng cách được đóng gói theo một định dạng khung 
 
 ## Video minh họa
 
-[![Xem video](https://img.youtube.com/vi/TBA_9MDTWb8/hqdefault.jpg)](https://youtube.com/shorts/TBA_9MDTWb8)
+
+
+https://github.com/user-attachments/assets/1926875d-f966-454c-846d-3aac775d518c
+
+
 
 ---
 
